@@ -1,6 +1,7 @@
+"use client";
 import Image from "next/image";
 import Link from "next/link";
-import React from "react";
+import React, { useEffect, useRef, useState } from "react";
 import { MdHomeFilled } from "react-icons/md";
 import { IoSearchOutline } from "react-icons/io5";
 import { MdExplore } from "react-icons/md";
@@ -11,10 +12,40 @@ import { CgAddR } from "react-icons/cg";
 import { IoPerson } from "react-icons/io5";
 import { FaThreads } from "react-icons/fa6";
 import { CiMenuBurger } from "react-icons/ci";
+import { signIn, signOut, useSession } from "next-auth/react";
 
 export default function Sidebar() {
+  const { data: session } = useSession();
+  console.log(session);
+
+  const [open, setOpen] = useState(false);
+  const popupRef = useRef(null);
+
+  const handleOpen = () => {
+    setOpen(!open); // Toggle the click state
+  };
+
+  const handleClickOutside = (event) => {
+    if (popupRef.current && !popupRef.current.contains(event.target)) {
+      setOpen(false);
+    }
+  };
+
+  useEffect(() => {
+    if (open) {
+      document.addEventListener("mousedown", handleClickOutside);
+    } else {
+      document.removeEventListener("mousedown", handleClickOutside);
+    }
+
+    // Cleanup the event listener on component unmount
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [open]);
+
   return (
-    <div className=" ">
+    <div className="relative border border-red-500 h-screen">
       <div className=" hidden lg:block h-[100px] flex items-center px-6">
         <Link href="/">
           <Image
@@ -103,6 +134,17 @@ export default function Sidebar() {
             <p className=" ">Profil</p>
           </div>
         </div>
+
+        <div className="flex items-center gap-3  hover:bg-gray-100 cursor-pointer p-2 rounded-md my-3">
+          <div className=" border border-black rounded-full">
+            <IoPerson size={25} />
+          </div>
+          <div className="hidden lg:block">
+            <button onClick={() => signIn()} className=" ">
+              Login
+            </button>
+          </div>
+        </div>
       </div>
 
       <div className=" h-auto bottom-0 fixed  w-1/6 px-4 py-5 n">
@@ -120,10 +162,22 @@ export default function Sidebar() {
             <CiMenuBurger size={25} />
           </div>
           <div className="hidden lg:block">
-            <p className=" ">Lainnya</p>
+            <p onClick={handleOpen} className=" ">
+              Lainnya
+            </p>
           </div>
         </div>
       </div>
+      {open && (
+        <div
+          ref={popupRef}
+          className="w-[200px] h-[300px] z-50 bg-white border border-gray-100 absolute bottom-3 left-3 rounded-lg shadow-2xl"
+        >
+          <div className="px-4 py-3 m-2 rounded-md hover:bg-gray-100 cursor-pointer ">
+            <button onClick={() => signOut()}>Logout</button>
+          </div>
+        </div>
+      )}
     </div>
   );
 }

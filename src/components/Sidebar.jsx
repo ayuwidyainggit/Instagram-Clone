@@ -45,7 +45,7 @@ export default function Sidebar() {
   }, [open]);
 
   return (
-    <div className="relative border border-red-500 h-screen">
+    <div className="relative  h-screen">
       <div className=" hidden lg:block h-[100px] flex items-center px-6">
         <Link href="/">
           <Image
